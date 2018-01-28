@@ -5,7 +5,7 @@ os:
   - osx
 
 dist: xenial
-sudo: required
+sudo: false
 
 compiler:
   - clang
@@ -124,6 +124,20 @@ addons:
       - libc6-dev-armhf-cross
       - g++-aarch64-linux-gnu
       - libc6-dev-arm64-cross
+      - g++-powerpc-linux-gnu
+      - libc6-dev-powerpc-cross
+      - g++-powerpc64le-linux-gnu
+      - libc6-dev-ppc64el-cross
+      - g++-mingw-w64-i686
+      - mingw-w64-i686-dev
+      - doxygen
+      - python-docutils
+      - sphinx-doc
+      - pylint
+      - pylint3
+      - trousers
+      - libtspi-dev
+      - python-coverage
 
   sonarcloud:
     organization: "randombit-github"
