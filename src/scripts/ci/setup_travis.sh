@@ -7,7 +7,7 @@ git clone --depth 1 https://github.com/randombit/botan-ci-tools
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 
     # ccache in Trusty is too old, use version from Xenial
-    sudo dpkg -i botan-ci-tools/ubuntu/ccache_3.2.4-1_amd64.deb
+    #sudo dpkg -i botan-ci-tools/ubuntu/ccache_3.2.4-1_amd64.deb
 
     if [ "$BUILD_MODE" = "valgrind" ]; then
         sudo apt-get -qq update
@@ -21,7 +21,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 
     elif [ "${BUILD_MODE:0:5}" = "cross" ]; then
          # Need updated qemu
-         sudo add-apt-repository -y ppa:ubuntu-cloud-archive/kilo-staging
+         #sudo add-apt-repository -y ppa:ubuntu-cloud-archive/kilo-staging
          sudo apt-get -qq update
          sudo apt-get install qemu-user
 
@@ -51,7 +51,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         /tmp/softhsm/bin/softhsm2-util --init-token --free --label test --pin 123456 --so-pin 12345678
 
         # need updated lcov for gcc 4.8 coverage format
-        sudo dpkg -i botan-ci-tools/ubuntu/lcov_1.12-2_all.deb
+        #sudo dpkg -i botan-ci-tools/ubuntu/lcov_1.12-2_all.deb
 
         (cd /home/travis/bin && ln -s gcov-4.8 gcov)
 
@@ -73,14 +73,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 
     elif [ "$BUILD_MODE" = "docs" ]; then
         sudo apt-get -qq update
-        sudo apt-get install doxygen python-docutils
-
-        # The version of Sphinx in 14.04 is too old (1.2.2) and does not support
-        # all C++ features used in the manual. Install python-requests to avoid
-        # problem in Ubuntu packaged version, see
-        # http://stackoverflow.com/questions/32779919/no-module-named-for-requests
-        sudo apt-get remove python-requests python-openssl
-        sudo pip install requests sphinx pyopenssl
+        sudo apt-get install doxygen python-docutils sphinx-doc
     fi
 
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then

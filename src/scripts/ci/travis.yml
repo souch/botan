@@ -4,7 +4,7 @@ os:
   - linux
   - osx
 
-dist: trusty
+dist: xenial
 sudo: required
 
 compiler:
@@ -111,6 +111,19 @@ cache:
     - $HOME/.sonar/cache
 
 addons:
+
+  apt:
+    packages:
+      - g++-4.8
+      - ccache
+      - valgrind
+      - wine
+      - qemu-user
+      - g++-arm-linux-gnueabihf
+      - libc6-dev-armhf-cross
+      - g++-aarch64-linux-gnu
+      - libc6-dev-arm64-cross
+
   sonarcloud:
     organization: "randombit-github"
     token:
