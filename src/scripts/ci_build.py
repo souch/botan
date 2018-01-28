@@ -134,8 +134,10 @@ def determine_flags(target, target_os, target_cpu, target_cc, cc_bin, ccache, ro
         elif target == 'cross-win32':
             cc_bin = 'i686-w64-mingw32-g++'
             flags += ['--cpu=x86_32', '--cc-abi-flags=-static', '--ar-command=i686-w64-mingw32-ar']
-            test_cmd = [os.path.join(root_dir, 'botan-test.exe')]
             # No runtime prefix required for Wine
+            test_cmd = [os.path.join(root_dir, 'botan-test.exe')]
+            # However Travis does not support Wine in container builds
+            test_cmd = None
         else:
             # Build everything but restrict what is run
             test_cmd += fast_tests
