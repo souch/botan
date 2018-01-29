@@ -116,6 +116,8 @@ addons:
   apt:
     packages:
     - g++-4.8
+    - g++-7
+    - g++-9
     - ccache
     - valgrind
     - wine
