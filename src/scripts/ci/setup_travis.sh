@@ -4,6 +4,8 @@ which shellcheck > /dev/null && shellcheck "$0" # Run shellcheck on this if avai
 
 git clone --depth 1 https://github.com/randombit/botan-ci-tools
 
+dpkg -l
+
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 
     if [ "$BUILD_MODE" = "coverage" ]; then
