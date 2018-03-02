@@ -373,24 +373,24 @@ PKIX::check_ocsp_online(const std::vector<std::shared_ptr<const X509_Certificate
          ocsp_response_futures.emplace_back(std::async(std::launch::deferred, [&]() -> std::shared_ptr<const OCSP::Response> {
                   throw Exception("No OCSP responder URL set for this certificate");
                   }));
-            }
-         else
-            {
-            ocsp_response_futures.emplace_back(std::async(std::launch::async, [&]() -> std::shared_ptr<const OCSP::Response> {
-                  OCSP::Request req(*issuer, BigInt::decode(subject->serial_number()));
+         }
+      else
+         {
+         ocsp_response_futures.emplace_back(std::async(std::launch::async, [&]() -> std::shared_ptr<const OCSP::Response> {
+               OCSP::Request req(*issuer, BigInt::decode(subject->serial_number()));
 
-                  auto http = HTTP::POST_sync(subject->ocsp_responder(),
-                                              "application/ocsp-request",
-                                              req.BER_encode(),
-                                              /*redirects*/1,
-                                              timeout);
+               auto http = HTTP::POST_sync(subject->ocsp_responder(),
+                                             "application/ocsp-request",
+                                             req.BER_encode(),
+                                             /*redirects*/1,
+                                             timeout);
 
-                  http.throw_unless_ok();
-                  // Check the MIME type?
+               http.throw_unless_ok();
+               // Check the MIME type?
 
-                  return std::make_shared<const OCSP::Response>(http.body());
-                  }));
-            }
+               return std::make_shared<const OCSP::Response>(http.body());
+               }));
+         }
       }
 
    std::vector<std::shared_ptr<const OCSP::Response>> ocsp_responses;
@@ -420,9 +420,10 @@ PKIX::check_crl_online(const std::vector<std::shared_ptr<const X509_Certificate>
 
    for(size_t i = 0; i != cert_path.size(); ++i)
       {
-      for(size_t c = 0; c != certstores.size(); ++i)
+      const std::shared_ptr<const X509_Certificate>& cert = cert_path.at(i);
+      for(size_t c = 0; c != certstores.size(); ++c)
          {
-         crls[i] = certstores[c]->find_crl_for(*cert_path[i]);
+         crls[i] = certstores[c]->find_crl_for(*cert);
          if(crls[i])
             break;
          }
@@ -438,7 +439,7 @@ PKIX::check_crl_online(const std::vector<std::shared_ptr<const X509_Certificate>
          */
          future_crls.emplace_back(std::future<std::shared_ptr<const X509_CRL>>());
          }
-      else if(cert_path[i]->crl_distribution_point() == "")
+      else if(cert->crl_distribution_point() == "")
          {
          // Avoid creating a thread for this case
          future_crls.emplace_back(std::async(std::launch::deferred, [&]() -> std::shared_ptr<const X509_CRL> {
@@ -448,7 +449,9 @@ PKIX::check_crl_online(const std::vector<std::shared_ptr<const X509_Certificate>
       else
          {
          future_crls.emplace_back(std::async(std::launch::async, [&]() -> std::shared_ptr<const X509_CRL> {
-               auto http = HTTP::GET_sync(cert_path[i]->crl_distribution_point());
+               auto http = HTTP::GET_sync(cert->crl_distribution_point(),
+                                          /*redirects*/ 1, timeout);
+
                http.throw_unless_ok();
                // check the mime type?
                return std::make_shared<const X509_CRL>(http.body());
@@ -462,16 +465,12 @@ PKIX::check_crl_online(const std::vector<std::shared_ptr<const X509_Certificate>
          {
          try
             {
-            std::future_status status = future_crls[i].wait_for(timeout);
-
-            if(status == std::future_status::ready)
-               {
-               crls[i] = future_crls[i].get();
-               }
+            crls[i] = future_crls[i].get();
             }
-         catch(std::exception&)
+         catch(std::exception& e)
             {
             // crls[i] left null
+            // todo: log exception e.what() ?
             }
          }
       }
